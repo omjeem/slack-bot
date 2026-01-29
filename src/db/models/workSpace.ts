@@ -27,16 +27,10 @@ const WorkspaceSchema = new mongoose.Schema(
     installedBy: {
       type: String,
     },
-
-    settings: {
-      trackPublicChannels: { type: Boolean, default: true },
-      trackPrivateChannels: { type: Boolean, default: true },
-      trackDMs: { type: Boolean, default: false },
-    },
   },
   { timestamps: true },
 );
 
-const Workspace = mongoose.model("Workspace", WorkspaceSchema);
+const WorkspaceModal = mongoose.model("Workspace", WorkspaceSchema);
 
-export default Workspace;
+export default WorkspaceModal;

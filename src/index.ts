@@ -7,12 +7,19 @@ import connectMongoDb from "./db";
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(
+  express.json({
+    verify: (req: any, res, buf) => {
+      req.rawBody = buf.toString("utf8");
+    },
+  }),
+);
+
 app.use(cookieParser());
 
 app.use("/api", mainRouter);
 
-app.listen(envConfigs.port, async() => {
+app.listen(envConfigs.port, async () => {
   console.log(`Server is Running", "http://localhost:${envConfigs.port}`);
-  await connectMongoDb()
+  await connectMongoDb();
 });

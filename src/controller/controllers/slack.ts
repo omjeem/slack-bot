@@ -1,12 +1,13 @@
 import { envConfigs } from "@/config/envConfig";
 import { getRandomBytes } from "@/config/utils";
+import { Services } from "@/services";
 import axios from "axios";
 import { Request, Response } from "express";
 
 export class slack {
   static callBack = async (req: Request, res: Response) => {
     const { code, state }: any = req.query;
-    const userId = req.user?.userId || envConfigs.defaultToken;
+    const userId = state;
 
     const savedState = req.cookies.slack_oauth_state;
     console.log({ savedState });
@@ -34,11 +35,43 @@ export class slack {
       }
       const { team, access_token, bot_user_id } = response.data;
 
+      const slackTeamId = team.id;
+      const teamName = team.name;
+      const botUserId = bot_user_id;
+      const botToken = access_token;
+      const installedBy = userId;
+
       console.log("✅ WORKSPACE CONNECTED");
-      console.log("Team:", team.name);
-      console.log("Team ID:", team.id);
-      console.log("Bot User ID:", bot_user_id);
-      console.log("Bot Token:", access_token);
+      console.log("Team:", teamName);
+      console.log("Team ID:", slackTeamId);
+      console.log("Bot User ID:", botUserId);
+      console.log("Bot Token:", botToken);
+      console.log("Installed By:", installedBy);
+
+      let finalData;
+      const workSpaceData =
+        await Services.slack.getWorkSpaceByTeamId(slackTeamId);
+      if (!workSpaceData) {
+        const finalData = await Services.slack.createWorkSpace({
+          slackTeamId,
+          teamName,
+          botToken,
+          botUserId,
+          installedBy,
+        });
+        console.log("Newly Created", { finalData });
+      } else {
+        finalData = await Services.slack.updateWorkSpaceData({
+          slackTeamId: team.id,
+          data: {
+            teamName,
+            botToken,
+            botUserId,
+            installedBy,
+          },
+        });
+        console.log("Updated", { finalData });
+      }
 
       res.send(`
       <h2>Slack Connected ✅</h2>
@@ -68,7 +101,7 @@ export class slack {
   };
 
   static install = async (req: Request, res: Response) => {
-    const state = getRandomBytes();
+    const state = String(req.user.userId);
 
     res.cookie("slack_oauth_state", state);
 
