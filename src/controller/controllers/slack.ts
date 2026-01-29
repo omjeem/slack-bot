@@ -1,4 +1,5 @@
 import { envConfigs } from "@/config/envConfig";
+import { getRandomBytes } from "@/config/utils";
 import axios from "axios";
 import { Request, Response } from "express";
 
@@ -53,6 +54,45 @@ export class slack {
   static events = async (req: Request, res: Response) => {
     try {
       console.log("Request hit for events  ----");
+      console.log("Query", req.query);
+      console.log("Params", req.params);
+      console.log("Body", req.body);
+
+      return res.send(req.body.challenge);
+    } catch (error: any) {
+      console.log("Error in callback", error);
+      return res.status(400).json({
+        message: "Error Occcures",
+      });
+    }
+  };
+
+  static install = async (req: Request, res: Response) => {
+    const state = getRandomBytes();
+
+    res.cookie("slack_oauth_state", state);
+
+    console.log({ state });
+    const params = new URLSearchParams({
+      client_id: envConfigs.slack.clientId,
+      scope: [
+        "channels:read",
+        "channels:history",
+        "users:read",
+        "chat:write",
+        "im:history",
+        "groups:history",
+      ].join(","),
+      redirect_uri: envConfigs.slack.redirectUrl,
+      state,
+    });
+
+    res.redirect(`https://slack.com/oauth/v2/authorize?${params}`);
+  };
+
+  static interaction = async (req: Request, res: Response) => {
+    try {
+      console.log("Request hit for interactions  ----");
       console.log("Query", req.query);
       console.log("Params", req.params);
       console.log("Body", req.body);
