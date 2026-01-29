@@ -87,11 +87,47 @@ export class slack {
   static events = async (req: Request, res: Response) => {
     try {
       console.log("Request hit for events  ----");
-      console.log("Query", req.query);
-      console.log("Params", req.params);
       console.log("Body", req.body);
+      const {
+        token,
+        team_id,
+        context_team_id,
+        api_app_id,
+        event,
+        type,
+        event_id,
+        event_time,
+      } = req.body;
 
-      return res.send(req.body.challenge);
+      if (type === "url_verification") {
+        return res.send(req.body.challenge);
+      }
+
+      const eventType = event.type;
+      const eventSubType = event.subtype;
+      const eventUser = event.user;
+      const eventTs = event.ts;
+      const eventClientMsgId = event.client_msg_id;
+      const eventText = event.text;
+      const eventChannel = event.channel;
+      const eventChannelType = event.channel_type;
+
+      if (eventSubType === "channel_join") {
+        await Services.slack.addNewChannel({
+          slackTeamId: team_id,
+          channelId: eventChannel,
+        });
+      } else if (eventType === "message") {
+        await Services.slack.addNewChat({
+          slackTeamId: team_id,
+          channelId: eventChannel,
+          userId: eventUser,
+          message: eventText,
+          eventId: event_id,
+          channelType: eventChannelType,
+        });
+      }
+      return res.send(1);
     } catch (error: any) {
       console.log("Error in callback", error);
       return res.status(400).json({
