@@ -8,7 +8,7 @@ const slackRouter = express.Router();
 slackRouter.get("/oauth/callback", Controllers.slack.callBack);
 
 slackRouter.post("/events", verifySlackRequest, Controllers.slack.events);
-slackRouter.post("/interactions", Controllers.slack.interaction);
+slackRouter.post("/commands", Controllers.slack.commands);
 slackRouter.get("/install", authMiddleware, Controllers.slack.install);
 slackRouter.get(
   "/workspaces",
@@ -24,6 +24,12 @@ slackRouter.get(
   "/workspaces/channels/messages/:teamId/:channelId",
   authMiddleware,
   Controllers.slack.getAllChannelsMessages,
+);
+
+slackRouter.get(
+  "/workspaces/channels/suggestions/:teamId/:channelId",
+  authMiddleware,
+  Controllers.slack.generateSuggestionsFromConotext,
 );
 
 export default slackRouter;

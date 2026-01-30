@@ -85,6 +85,23 @@ export class slack {
     }
   };
 
+  static commands = async (req: Request, res: Response) => {
+    try {
+      const body = req.body;
+      console.log("Body is", body);
+      const { team_id, channel_id, command, text, response_url } = body;
+      if (command === "/suggest") {
+        
+      }
+      res.json({
+        response_type: "ephemeral",
+        text: "Got it! Generating suggestions… ⏳",
+      });
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
   static events = async (req: Request, res: Response) => {
     try {
       console.log("Request hit for events  ----");
@@ -128,7 +145,12 @@ export class slack {
           eventId: event_id,
           channelType: eventChannelType,
         });
+        Services.slack.generateSummaryIfSufficient({
+          slackTeamId: team_id,
+          channelId: eventChannel,
+        });
       }
+
       return res.send(1);
     } catch (error: any) {
       console.log("Error in callback", error);
@@ -153,28 +175,13 @@ export class slack {
         "chat:write",
         "im:history",
         "groups:history",
+        "commands",
       ].join(","),
       redirect_uri: envConfigs.slack.redirectUrl,
       state,
     });
 
     res.redirect(`https://slack.com/oauth/v2/authorize?${params}`);
-  };
-
-  static interaction = async (req: Request, res: Response) => {
-    try {
-      console.log("Request hit for interactions  ----");
-      console.log("Query", req.query);
-      console.log("Params", req.params);
-      console.log("Body", req.body);
-
-      return res.send(req.body.challenge);
-    } catch (error: any) {
-      console.log("Error in callback", error);
-      return res.status(400).json({
-        message: "Error Occcures",
-      });
-    }
   };
 
   static getUserWorkSpaces = async (req: Request, res: Response) => {
@@ -225,7 +232,39 @@ export class slack {
         slackTeamId: teamId,
         channelId,
       });
+      Services.slack.generateSummaryIfSufficient({
+        slackTeamId: teamId,
+        channelId,
+      });
       return successResponse(res, "All channel messages retrived", messages);
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
+  static generateSuggestionsFromConotext = async (
+    req: Request,
+    res: Response,
+  ) => {
+    try {
+      const userId = req.user.userId;
+      const { teamId, channelId }: any = req.params;
+      const isTeamBelonsToUser = await Services.slack.getUserWorkSpaces({
+        userId,
+        teamId,
+      });
+      if (isTeamBelonsToUser.length === 0) {
+        throw new Error("Workspace not exists or not belongs to you");
+      }
+      const suggestions = await Services.slack.generateSuggestionsFromContext({
+        slackTeamId: teamId,
+        channelId,
+      });
+      return successResponse(
+        res,
+        "Suggestions generated Successfully",
+        suggestions,
+      );
     } catch (error: any) {
       return errorResponse(res, error.message || error);
     }

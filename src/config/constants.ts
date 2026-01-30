@@ -4,6 +4,9 @@ const Constants = {
     BAD_REQUEST: 400,
     UNAUTHORIZED: 401,
   },
+  AI_PROCESSING: {
+    SUMMARY_MSG_LIMIT: 3,
+  },
 };
 
 export default Constants;
