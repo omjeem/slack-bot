@@ -14,7 +14,6 @@ export class slack {
     teamName: string;
     botUserId: string;
     botToken: string;
-    installedBy: string;
   }) => {
     return await WorkspaceModal.create(body);
   };
@@ -29,7 +28,6 @@ export class slack {
       teamName?: string;
       botUserId?: string;
       botToken?: string;
-      installedBy?: string;
     };
   }) => {
     console.log("Updating the details --- ", { body });
@@ -39,7 +37,6 @@ export class slack {
         ...(body.data.teamName && { teamName: body.data.teamName }),
         ...(body.data.botUserId && { botUserId: body.data.botUserId }),
         ...(body.data.botToken && { botToken: body.data.botToken }),
-        ...(body.data.installedBy && { installedBy: body.data.installedBy }),
       },
     );
   };
@@ -68,7 +65,7 @@ export class slack {
   static addNewChat = async (body: {
     slackTeamId: string;
     channelId: string;
-    userId: string;
+    msgUserId: string;
     message: string;
     eventId: string;
     channelType: string;
@@ -77,15 +74,6 @@ export class slack {
     console.log({ addNewChat });
   };
 
-  static getUserWorkSpaces = async (body: {
-    userId: string;
-    teamId?: string;
-  }) => {
-    return await WorkspaceModal.find({
-      installedBy: body.userId,
-      ...(body.teamId && { slackTeamId: body.teamId }),
-    }).select("_id slackTeamId teamName botUserId ");
-  };
 
   static getAllWorkSpaceChannels = async (teamId: string) => {
     return await WorkspaceChannelModal.find({ slackTeamId: teamId });
@@ -107,7 +95,7 @@ export class slack {
       .sort({
         createdAt: 1,
       })
-      .select("_id userId message isProcessed createdAt");
+      .select("_id message isProcessed createdAt");
   };
 
   static generateSummaryIfSufficient = async (body: {
@@ -166,13 +154,13 @@ export class slack {
 
     const summaries = workSpaceContexts.map((m) => m.summary);
     const messages = messagesData.map((m) => m.message);
-    
+
     const suggestionsData = await generateSuggestionFromContext(
       summaries,
       messages,
     );
     console.log({ suggestionsData });
     console.log({ workSpaceContexts, messages });
-    return suggestionsData
+    return suggestionsData;
   };
 }

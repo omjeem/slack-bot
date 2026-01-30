@@ -11,7 +11,7 @@ const WorkspaceMessageSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    userId: {
+    msgUserId: {
       type: String,
       required: true,
     },

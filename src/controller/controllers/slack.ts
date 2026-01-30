@@ -1,14 +1,13 @@
 import { envConfigs } from "@/config/envConfig";
 import { errorResponse, successResponse } from "@/config/response";
-import { getRandomBytes } from "@/config/utils";
 import { Services } from "@/services";
 import axios from "axios";
 import { Request, Response } from "express";
 
 export class slack {
+
   static callBack = async (req: Request, res: Response) => {
     const { code, state }: any = req.query;
-    const userId = state;
 
     const savedState = req.cookies.slack_oauth_state;
     console.log({ savedState });
@@ -40,14 +39,12 @@ export class slack {
       const teamName = team.name;
       const botUserId = bot_user_id;
       const botToken = access_token;
-      const installedBy = userId;
 
       console.log("✅ WORKSPACE CONNECTED");
       console.log("Team:", teamName);
       console.log("Team ID:", slackTeamId);
       console.log("Bot User ID:", botUserId);
       console.log("Bot Token:", botToken);
-      console.log("Installed By:", installedBy);
 
       let finalData;
       const workSpaceData =
@@ -58,7 +55,6 @@ export class slack {
           teamName,
           botToken,
           botUserId,
-          installedBy,
         });
         console.log("Newly Created", { finalData });
       } else {
@@ -68,7 +64,6 @@ export class slack {
             teamName,
             botToken,
             botUserId,
-            installedBy,
           },
         });
         console.log("Updated", { finalData });
@@ -91,7 +86,6 @@ export class slack {
       console.log("Body is", body);
       const { team_id, channel_id, command, text, response_url } = body;
       if (command === "/suggest") {
-        
       }
       res.json({
         response_type: "ephemeral",
@@ -140,7 +134,7 @@ export class slack {
         await Services.slack.addNewChat({
           slackTeamId: team_id,
           channelId: eventChannel,
-          userId: eventUser,
+          msgUserId: eventUser,
           message: eventText,
           eventId: event_id,
           channelType: eventChannelType,
@@ -161,11 +155,6 @@ export class slack {
   };
 
   static install = async (req: Request, res: Response) => {
-    const state = String(req.user.userId);
-
-    res.cookie("slack_oauth_state", state);
-
-    console.log({ state });
     const params = new URLSearchParams({
       client_id: envConfigs.slack.clientId,
       scope: [
@@ -178,95 +167,7 @@ export class slack {
         "commands",
       ].join(","),
       redirect_uri: envConfigs.slack.redirectUrl,
-      state,
     });
-
     res.redirect(`https://slack.com/oauth/v2/authorize?${params}`);
-  };
-
-  static getUserWorkSpaces = async (req: Request, res: Response) => {
-    try {
-      const userId = req.user.userId;
-      const workSpace = await Services.slack.getUserWorkSpaces({ userId });
-      return successResponse(res, "User Workspaces fetched", workSpace);
-    } catch (error: any) {
-      return errorResponse(res, error.message || error);
-    }
-  };
-
-  static getAllWorkSpaceChannels = async (req: Request, res: Response) => {
-    try {
-      const userId = req.user.userId;
-      const { teamId }: any = req.params;
-      const isTeamBelonsToUser = await Services.slack.getUserWorkSpaces({
-        userId,
-        teamId,
-      });
-      if (isTeamBelonsToUser.length === 0) {
-        throw new Error("Workspace not exists or not belongs to you");
-      }
-      const workSpaceChannel =
-        await Services.slack.getAllWorkSpaceChannels(teamId);
-      return successResponse(
-        res,
-        "User Workspaces Channels fetched",
-        workSpaceChannel,
-      );
-    } catch (error: any) {
-      return errorResponse(res, error.message || error);
-    }
-  };
-
-  static getAllChannelsMessages = async (req: Request, res: Response) => {
-    try {
-      const userId = req.user.userId;
-      const { teamId, channelId }: any = req.params;
-      const isTeamBelonsToUser = await Services.slack.getUserWorkSpaces({
-        userId,
-        teamId,
-      });
-      if (isTeamBelonsToUser.length === 0) {
-        throw new Error("Workspace not exists or not belongs to you");
-      }
-      const messages = await Services.slack.getAllChannelMessages({
-        slackTeamId: teamId,
-        channelId,
-      });
-      Services.slack.generateSummaryIfSufficient({
-        slackTeamId: teamId,
-        channelId,
-      });
-      return successResponse(res, "All channel messages retrived", messages);
-    } catch (error: any) {
-      return errorResponse(res, error.message || error);
-    }
-  };
-
-  static generateSuggestionsFromConotext = async (
-    req: Request,
-    res: Response,
-  ) => {
-    try {
-      const userId = req.user.userId;
-      const { teamId, channelId }: any = req.params;
-      const isTeamBelonsToUser = await Services.slack.getUserWorkSpaces({
-        userId,
-        teamId,
-      });
-      if (isTeamBelonsToUser.length === 0) {
-        throw new Error("Workspace not exists or not belongs to you");
-      }
-      const suggestions = await Services.slack.generateSuggestionsFromContext({
-        slackTeamId: teamId,
-        channelId,
-      });
-      return successResponse(
-        res,
-        "Suggestions generated Successfully",
-        suggestions,
-      );
-    } catch (error: any) {
-      return errorResponse(res, error.message || error);
-    }
   };
 }

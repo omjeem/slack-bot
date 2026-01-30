@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { required } from "zod/mini";
 
 const WorkspaceChannelContextSchema = new mongoose.Schema(
   {

@@ -23,10 +23,6 @@ const WorkspaceSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-
-    installedBy: {
-      type: String,
-    },
   },
   { timestamps: true },
 );
