@@ -23,6 +23,11 @@ const WorkspaceSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+
+    tokensUsed: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true },
 );

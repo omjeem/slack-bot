@@ -74,7 +74,6 @@ export class slack {
     console.log({ addNewChat });
   };
 
-
   static getAllWorkSpaceChannels = async (teamId: string) => {
     return await WorkspaceChannelModal.find({ slackTeamId: teamId });
   };
@@ -131,14 +130,28 @@ export class slack {
         { _id: { $in: messageIds.map((m) => m._id) } },
         { $set: { isProcessed: true } },
       );
-
+      await this.updateWorkSpaceTokens({
+        slackTeamId: body.slackTeamId,
+        totalTokens,
+      });
       console.log({ summaryFeed });
     }
+  };
+
+  static updateWorkSpaceTokens = async (body: {
+    slackTeamId: string;
+    totalTokens: Number;
+  }) => {
+    await WorkspaceModal.updateOne(
+      { slackTeamId: body.slackTeamId },
+      { $inc: { tokensUsed: body.totalTokens } },
+    );
   };
 
   static generateSuggestionsFromContext = async (body: {
     slackTeamId: string;
     channelId: string;
+    response_url: string;
   }) => {
     const workSpaceContexts = await WorkspaceChannelContextModal.find({
       slackTeamId: body.slackTeamId,
@@ -154,13 +167,29 @@ export class slack {
 
     const summaries = workSpaceContexts.map((m) => m.summary);
     const messages = messagesData.map((m) => m.message);
+    console.log({ workSpaceContexts, messages });
 
     const suggestionsData = await generateSuggestionFromContext(
       summaries,
       messages,
     );
+    if (!suggestionsData) return;
     console.log({ suggestionsData });
-    console.log({ workSpaceContexts, messages });
-    return suggestionsData;
+    const { text, usages } = suggestionsData;
+    const { totalTokens = 0, inputTokens = 0, outputTokens = 0 } = usages;
+    
+    await this.updateWorkSpaceTokens({
+      slackTeamId: body.slackTeamId,
+      totalTokens,
+    });
+
+    await fetch(body.response_url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        response_type: "ephemeral",
+        text,
+      }),
+    });
   };
 }

@@ -5,14 +5,10 @@ import axios from "axios";
 import { Request, Response } from "express";
 
 export class slack {
-
   static callBack = async (req: Request, res: Response) => {
     const { code, state }: any = req.query;
 
-    const savedState = req.cookies.slack_oauth_state;
-    console.log({ savedState });
-
-    if (!code || !state) {
+    if (!code) {
       return res.status(400).send("Invalid OAuth state");
     }
 
@@ -86,10 +82,15 @@ export class slack {
       console.log("Body is", body);
       const { team_id, channel_id, command, text, response_url } = body;
       if (command === "/suggest") {
+        Services.slack.generateSuggestionsFromContext({
+          slackTeamId: team_id,
+          channelId: channel_id,
+          response_url,
+        });
       }
       res.json({
         response_type: "ephemeral",
-        text: "Got it! Generating suggestions… ⏳",
+        text: "Generating articles suggestions… ⏳",
       });
     } catch (error: any) {
       return errorResponse(res, error.message || error);
@@ -128,6 +129,7 @@ export class slack {
         slackTeamId: team_id,
         channelId: eventChannel,
       });
+
       if (eventSubType === "channel_join") {
         console.log("Channel is added if not exists");
       } else if (eventType === "message") {

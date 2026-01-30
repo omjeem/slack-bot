@@ -9,32 +9,37 @@ export function verifySlackRequest(
 ) {
   const slackSignature = req.headers["x-slack-signature"];
   const slackTimestamp = req.headers["x-slack-request-timestamp"];
-  console.log({ slackSignature, slackTimestamp });
+  // console.log({ slackSignature, slackTimestamp });
+  console.log("Verifiy Slack Request ---- ");
   if (!slackSignature || !slackTimestamp) {
+    console.log("Missing Slack headers");
     return res.status(401).send("Missing Slack headers");
   }
 
   const fiveMinutesAgo = Math.floor(Date.now() / 1000) - 60 * 5;
   if (Number(slackTimestamp) < fiveMinutesAgo) {
+    console.log("Stale request");
     return res.status(401).send("Stale request");
   }
 
   const sigBaseString = `v0:${slackTimestamp}:${req.rawBody}`;
-  console.log({ sigBaseString });
+  // console.log({ sigBaseString });
   const mySignature =
     "v0=" +
     crypto
       .createHmac("sha256", envConfigs.slack.clientSigningSecret)
       .update(sigBaseString, "utf8")
       .digest("hex");
-  console.log({ mySignature });
+  // console.log({ mySignature });
   if (
     !crypto.timingSafeEqual(
       Buffer.from(mySignature, "utf8"),
       Buffer.from(slackSignature, "utf8"),
     )
   ) {
+    console.log("Invalid signature");
     return res.status(401).send("Invalid signature");
   }
+  console.log("Slack Request Verified Successfully ---- ");
   next();
 }

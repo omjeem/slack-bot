@@ -37,7 +37,7 @@ export const generateSuggestionFromContext = async (
       temperature: 0.3,
     });
     console.dir({ obj }, { depth: null });
-    return { object: obj.text, usages: obj.usage };
+    return { text: obj.text, usages: obj.usage };
   } catch (error: any) {
     console.log("Error in generating the Context", error);
     return null;

@@ -5,7 +5,7 @@ const Constants = {
     UNAUTHORIZED: 401,
   },
   AI_PROCESSING: {
-    SUMMARY_MSG_LIMIT: 3,
+    SUMMARY_MSG_LIMIT: 5,
   },
 };
 
