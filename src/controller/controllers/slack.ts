@@ -1,4 +1,5 @@
 import { envConfigs } from "@/config/envConfig";
+import { errorResponse, successResponse } from "@/config/response";
 import { getRandomBytes } from "@/config/utils";
 import { Services } from "@/services";
 import axios from "axios";
@@ -112,11 +113,12 @@ export class slack {
       const eventChannel = event.channel;
       const eventChannelType = event.channel_type;
 
+      await Services.slack.addNewChannel({
+        slackTeamId: team_id,
+        channelId: eventChannel,
+      });
       if (eventSubType === "channel_join") {
-        await Services.slack.addNewChannel({
-          slackTeamId: team_id,
-          channelId: eventChannel,
-        });
+        console.log("Channel is added if not exists");
       } else if (eventType === "message") {
         await Services.slack.addNewChat({
           slackTeamId: team_id,
@@ -172,6 +174,60 @@ export class slack {
       return res.status(400).json({
         message: "Error Occcures",
       });
+    }
+  };
+
+  static getUserWorkSpaces = async (req: Request, res: Response) => {
+    try {
+      const userId = req.user.userId;
+      const workSpace = await Services.slack.getUserWorkSpaces({ userId });
+      return successResponse(res, "User Workspaces fetched", workSpace);
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
+  static getAllWorkSpaceChannels = async (req: Request, res: Response) => {
+    try {
+      const userId = req.user.userId;
+      const { teamId }: any = req.params;
+      const isTeamBelonsToUser = await Services.slack.getUserWorkSpaces({
+        userId,
+        teamId,
+      });
+      if (isTeamBelonsToUser.length === 0) {
+        throw new Error("Workspace not exists or not belongs to you");
+      }
+      const workSpaceChannel =
+        await Services.slack.getAllWorkSpaceChannels(teamId);
+      return successResponse(
+        res,
+        "User Workspaces Channels fetched",
+        workSpaceChannel,
+      );
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
+  static getAllChannelsMessages = async (req: Request, res: Response) => {
+    try {
+      const userId = req.user.userId;
+      const { teamId, channelId }: any = req.params;
+      const isTeamBelonsToUser = await Services.slack.getUserWorkSpaces({
+        userId,
+        teamId,
+      });
+      if (isTeamBelonsToUser.length === 0) {
+        throw new Error("Workspace not exists or not belongs to you");
+      }
+      const messages = await Services.slack.getAllChannelMessages({
+        slackTeamId: teamId,
+        channelId,
+      });
+      return successResponse(res, "All channel messages retrived", messages);
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
     }
   };
 }

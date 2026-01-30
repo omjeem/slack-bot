@@ -10,5 +10,20 @@ slackRouter.get("/oauth/callback", Controllers.slack.callBack);
 slackRouter.post("/events", verifySlackRequest, Controllers.slack.events);
 slackRouter.post("/interactions", Controllers.slack.interaction);
 slackRouter.get("/install", authMiddleware, Controllers.slack.install);
+slackRouter.get(
+  "/workspaces",
+  authMiddleware,
+  Controllers.slack.getUserWorkSpaces,
+);
+slackRouter.get(
+  "/workspaces/channels/:teamId",
+  authMiddleware,
+  Controllers.slack.getAllWorkSpaceChannels,
+);
+slackRouter.get(
+  "/workspaces/channels/messages/:teamId/:channelId",
+  authMiddleware,
+  Controllers.slack.getAllChannelsMessages,
+);
 
 export default slackRouter;

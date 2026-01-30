@@ -70,4 +70,35 @@ export class slack {
     const addNewChat = await WorkspaceMessageModal.create(body);
     console.log({ addNewChat });
   };
+
+  static getUserWorkSpaces = async (body: {
+    userId: string;
+    teamId?: string;
+  }) => {
+    return await WorkspaceModal.find({
+      installedBy: body.userId,
+      ...(body.teamId && { slackTeamId: body.teamId }),
+    }).select("_id slackTeamId teamName botUserId ");
+  };
+
+  static getAllWorkSpaceChannels = async (teamId: string) => {
+    return await WorkspaceChannelModal.find({ slackTeamId: teamId });
+  };
+
+  static getAllChannelMessages = async (body: {
+    slackTeamId: string;
+    channelId: string;
+    isProcessed?: boolean;
+  }) => {
+    const conditions: any = {
+      slackTeamId: body.slackTeamId,
+      channelId: body.channelId,
+    };
+    if (typeof body.isProcessed === "boolean") {
+      conditions.isProcessed = body.isProcessed;
+    }
+    return await WorkspaceMessageModal.find({ ...conditions }).sort({
+      createdAt: 1,
+    });
+  };
 }

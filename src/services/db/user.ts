@@ -13,7 +13,7 @@ const findByEmail = async (email: string) => {
   return await UserModal.findOne({ email });
 };
 
-const findByUserId = async (userId: Types.ObjectId) => {
+const findByUserId = async (userId: string) => {
   return await UserModal.findById(userId).select("_id name email createdAt");
 };
 

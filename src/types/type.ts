@@ -2,7 +2,7 @@ import { Types } from "mongoose";
 
 export interface UserTokenPayload {
   user: {
-    userId: Types.ObjectId;
+    userId: string;
     email: string;
   };
 }
