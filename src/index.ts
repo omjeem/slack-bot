@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import mainRouter from "./routes";
@@ -16,6 +16,10 @@ app.use(
 );
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+app.get("/", (req: Request, res: Response) => {
+  return res.send("Welcome to Slack bot api!");
+});
 
 app.use("/api", mainRouter);
 
