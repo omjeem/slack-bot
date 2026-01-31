@@ -23,7 +23,7 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/api", mainRouter);
 
-app.listen(envConfigs.port, async () => {
-  console.log(`Server is Running", "http://localhost:${envConfigs.port}`);
+app.listen(envConfigs.port, "0.0.0.0", async () => {
+  console.log(`Server is running On", "http://localhost:${envConfigs.port}`);
   await connectMongoDb();
 });
