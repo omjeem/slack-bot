@@ -28,6 +28,11 @@ const WorkspaceSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    tokensLimit: {
+      type: Number,
+      default: 10000,
+    },
   },
   { timestamps: true },
 );

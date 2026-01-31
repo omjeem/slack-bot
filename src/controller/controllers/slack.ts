@@ -81,16 +81,24 @@ export class slack {
       const body = req.body;
       console.log("Body is", body);
       const { team_id, channel_id, command, text, response_url } = body;
+      let message = "Invalid command";
       if (command === "/suggest") {
+        message = "Generating articles suggestions… ⏳";
         Services.slack.generateSuggestionsFromContext({
           slackTeamId: team_id,
           channelId: channel_id,
           response_url,
         });
+      } else if (command === "/tokens") {
+        message = "Fetching total tokens consumed by our Workspace";
+        Services.slack.sendConsumedTokensOfWorkSpace({
+          teamId: team_id,
+          responseUrl: response_url,
+        });
       }
       res.json({
         response_type: "ephemeral",
-        text: "Generating articles suggestions… ⏳",
+        text: message,
       });
     } catch (error: any) {
       return errorResponse(res, error.message || error);

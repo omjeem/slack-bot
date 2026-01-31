@@ -101,6 +101,11 @@ export class slack {
     slackTeamId: string;
     channelId: string;
   }) => {
+    const tokensInfo = await this.getTokenConsumption(body.slackTeamId);
+    if (tokensInfo && tokensInfo.tokensUsed > tokensInfo.tokensLimit) {
+      console.log("Tokens limit reached ---- ", { tokensInfo });
+      return;
+    }
     const messages = await this.getAllChannelMessages({
       slackTeamId: body.slackTeamId,
       channelId: body.channelId,
@@ -153,43 +158,78 @@ export class slack {
     channelId: string;
     response_url: string;
   }) => {
-    const workSpaceContexts = await WorkspaceChannelContextModal.find({
-      slackTeamId: body.slackTeamId,
-      channelId: body.channelId,
-    }).sort({
-      createdAt: -1,
-    });
-    const messagesData = await this.getAllChannelMessages({
-      slackTeamId: body.slackTeamId,
-      channelId: body.channelId,
-      isProcessed: false,
-    });
+    const tokensInfo = await this.getTokenConsumption(body.slackTeamId);
+    let sendInfo;
+    if (tokensInfo && tokensInfo.tokensUsed > tokensInfo.tokensLimit) {
+      sendInfo = `
+      You’ve reached your token limit. Please contact omjeem558@gmail.com to request additional tokens.
+    `;
+    } else {
+      const workSpaceContexts = await WorkspaceChannelContextModal.find({
+        slackTeamId: body.slackTeamId,
+        channelId: body.channelId,
+      }).sort({
+        createdAt: -1,
+      });
+      const messagesData = await this.getAllChannelMessages({
+        slackTeamId: body.slackTeamId,
+        channelId: body.channelId,
+        isProcessed: false,
+      });
 
-    const summaries = workSpaceContexts.map((m) => m.summary);
-    const messages = messagesData.map((m) => m.message);
-    console.log({ workSpaceContexts, messages });
+      const summaries = workSpaceContexts.map((m) => m.summary);
+      const messages = messagesData.map((m) => m.message);
+      console.log({ workSpaceContexts, messages });
 
-    const suggestionsData = await generateSuggestionFromContext(
-      summaries,
-      messages,
-    );
-    if (!suggestionsData) return;
-    console.log({ suggestionsData });
-    const { text, usages } = suggestionsData;
-    const { totalTokens = 0, inputTokens = 0, outputTokens = 0 } = usages;
-    
-    await this.updateWorkSpaceTokens({
-      slackTeamId: body.slackTeamId,
-      totalTokens,
-    });
+      const suggestionsData = await generateSuggestionFromContext(
+        summaries,
+        messages,
+      );
+      if (!suggestionsData) return;
+      console.log({ suggestionsData });
+      const { text, usages } = suggestionsData;
+      const { totalTokens = 0, inputTokens = 0, outputTokens = 0 } = usages;
+      sendInfo = text;
+      await this.updateWorkSpaceTokens({
+        slackTeamId: body.slackTeamId,
+        totalTokens,
+      });
+    }
 
     await fetch(body.response_url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         response_type: "ephemeral",
-        text,
+        text: sendInfo,
       }),
     });
+  };
+
+  static sendConsumedTokensOfWorkSpace = async (body: {
+    teamId: string;
+    responseUrl: string;
+  }) => {
+    const tokensInfo = await this.getTokenConsumption(body.teamId);
+    let consumedTokens = 0;
+    if (tokensInfo) {
+      const { tokensUsed, tokensLimit } = tokensInfo;
+      consumedTokens = tokensUsed;
+    }
+    console.log({ consumedTokens });
+    await fetch(body.responseUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        response_type: "ephemeral",
+        text: consumedTokens,
+      }),
+    });
+  };
+
+  private static getTokenConsumption = async (teamId: string) => {
+    return await WorkspaceModal.findOne({ slackTeamId: teamId }).select(
+      "tokensUsed tokensLimit",
+    );
   };
 }
