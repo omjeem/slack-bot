@@ -17,6 +17,7 @@ WORKDIR /slack-bot
 COPY --from=builder /slack-bot/package*.json ./
 COPY --from=builder /slack-bot/node_modules ./node_modules
 COPY --from=builder /slack-bot/dist ./dist
+COPY --from=builder /slack-bot/public ./public 
 
 EXPOSE 8080
 

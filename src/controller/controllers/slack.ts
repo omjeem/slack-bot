@@ -3,6 +3,7 @@ import { errorResponse, successResponse } from "@/config/response";
 import { Services } from "@/services";
 import axios from "axios";
 import { Request, Response } from "express";
+import path from "path";
 
 export class slack {
   static callBack = async (req: Request, res: Response) => {
@@ -65,11 +66,7 @@ export class slack {
         console.log("Updated", { finalData });
       }
 
-      res.send(`
-      <h2>Slack Connected ✅</h2>
-      <p>Workspace: ${team.name}</p>
-      <p>Check your server logs.</p>
-    `);
+      res.sendFile(path.join(process.cwd(), "public/slack-connected.html"));
     } catch (err) {
       console.error(err);
       res.status(500).send("OAuth error");

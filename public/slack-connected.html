@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PostScout Connected</title>
+    <style>
+      :root {
+        --bg: #0f172a;
+        --card: #111827;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --accent: #38bdf8;
+        --success: #22c55e;
+        --border: #1f2937;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Helvetica, Arial, sans-serif;
+      }
+
+      body {
+        min-height: 100vh;
+        background: linear-gradient(180deg, #020617, var(--bg));
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      .container {
+        max-width: 680px;
+        width: 100%;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 32px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(34, 197, 94, 0.1);
+        color: var(--success);
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 14px;
+        margin-bottom: 16px;
+      }
+
+      h1 {
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        line-height: 1.3;
+      }
+
+      p {
+        color: var(--muted);
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+
+      .section {
+        margin-top: 28px;
+      }
+
+      .section h2 {
+        font-size: 18px;
+        margin-bottom: 12px;
+        font-weight: 600;
+      }
+
+      ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      li {
+        background: #020617;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-size: 15px;
+      }
+
+      code {
+        background: #020617;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 14px;
+        color: var(--accent);
+      }
+
+      .privacy {
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border);
+      }
+
+      .footer {
+        margin-top: 24px;
+        text-align: center;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      @media (max-width: 520px) {
+        h1 {
+          font-size: 24px;
+        }
+        .card {
+          padding: 24px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="card">
+        <div class="badge">✅ Slack Connected</div>
+
+        <h1>PostScout is ready</h1>
+
+        <p>
+          PostScout is now connected to your Slack workspace.  
+          It quietly builds context from conversations and suggests content ideas
+          only when you ask.
+        </p>
+
+        <div class="section">
+          <h2>How to get started</h2>
+          <ul>
+            <li>
+              Add PostScout to a channel you want to track using  
+              <code>/invite @PostScout</code>
+            </li>
+            <li>
+              Chat as you normally would — no changes to your workflow
+            </li>
+            <li>
+              Run <code>/suggest</code> in that channel to get LinkedIn / X post
+              ideas
+            </li>
+            <li>
+              Use <code>/tokens</code> to view token usage for your workspace
+            </li>
+          </ul>
+        </div>
+
+        <div class="privacy">
+          <h2>Privacy & data usage</h2>
+          <p>
+            PostScout only reads messages in channels it has been explicitly
+            invited to.
+            It does not auto-post, DM users, or read private conversations
+            without access.
+          </p>
+          <p>
+            Conversation data is used only to build context and generate content
+            suggestions.
+            You stay in full control of what gets shared or published.
+          </p>
+        </div>
+
+        <div class="footer">
+          You can close this tab and return to Slack.
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
