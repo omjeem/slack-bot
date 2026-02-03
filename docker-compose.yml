@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  slack-bot:
+    image: omjeem/slack-bot:latest
+    container_name: slack-bot
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    ports:
+      - "8080:8080"
