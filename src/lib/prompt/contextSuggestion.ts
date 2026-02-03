@@ -28,7 +28,7 @@ RECENT MESSAGES:
 ${formattedMessages}
 
 TASK:
-Generate up to 4 high-quality content suggestions suitable for linkedin or x.
+Generate up to 2-4 high-quality content suggestions suitable for linkedin or x.
 
 Guidelines:
 - Each suggestion should represent a distinct topic or angle.
